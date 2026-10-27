@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTIS-EEG 认知训练与干预系统</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ==================== 登录/注册页（未登录时覆盖全屏） ==================== -->
+<div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 44 44" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 6 C14 6 8 11 8 18 C8 22 10 25 13 27 C10 29 9 32 11 35 C13 38 17 39 20 38 C21 39 22 40 22 40 C22 40 23 39 24 38 C27 39 31 38 33 35 C35 32 34 29 31 27 C34 25 36 22 36 18 C36 11 30 6 22 6Z" fill="#B08968" opacity="0.18" stroke="#3D2C1E" stroke-width="1.8"/>
+                    <path d="M6 22 L12 22 L14 16 L17 28 L20 14 L23 30 L26 18 L29 26 L32 20 L34 22 L38 22" stroke="#3D2C1E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="16" cy="10" r="2.5" fill="#E6A57E" stroke="#3D2C1E" stroke-width="1"/>
+                </svg>
+            </div>
+            <span>CTIS-EEG · 认知训练与干预系统</span>
+        </div>
+
+        <!-- 登录表单 -->
+        <div id="authLoginForm">
+            <h2 style="font-size:22px; font-weight:700; margin-bottom:4px;">欢迎回来</h2>
+            <p class="text-soft" style="font-size:14px; margin-bottom:24px;">登录您的账户继续训练</p>
+            <div class="form-row" style="margin-bottom:16px;">
+                <label>用户名</label>
+                <input class="input" id="loginName" placeholder="请输入用户名" onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <div class="form-row" style="margin-bottom:24px;">
+                <label>密码</label>
+                <input class="input" id="loginPassword" type="password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <button class="btn btn-primary btn-block" onclick="doLogin()">登 录</button>
+            <div style="text-align:center; margin-top:16px; font-size:14px; color:var(--text-soft);">
+                还没有账户？<a href="#" onclick="showAuthRegister(); return false;" style="color:var(--primary); font-weight:600;">立即注册</a>
+            </div>
+        </div>
+
+        <!-- 注册表单 -->
+        <div id="authRegisterForm" style="display:none;">
+            <h2 style="font-size:22px; font-weight:700; margin-bottom:4px;">创建账户</h2>
+            <p class="text-soft" style="font-size:14px; margin-bottom:24px;">注册新用户开始认知训练</p>
+            <div class="form-grid" style="margin-bottom:12px;">
+                <div class="form-row">
+                    <label>用户名 *</label>
+                    <input class="input" id="regName" placeholder="请输入姓名">
+                </div>
+                <div class="form-row">
+                    <label>密码 *</label>
+                    <input class="input" id="regPassword" type="password" placeholder="至少4位">
+                </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:12px;">
+                <div class="form-row">
+                    <label>年龄</label>
+                    <input class="input" id="regAge" type="number" placeholder="如 68">
+                </div>
+                <div class="form-row">
+                    <label>性别</label>
+                    <input class="input" id="regGender" placeholder="男 / 女">
+                </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:12px;">
+                <div class="form-row">
+                    <label>诊断</label>
+                    <input class="input" id="regDiagnosis" placeholder="如 MCI / 早期AD">
+                </div>
+                <div class="form-row">
+                    <label>联系电话</label>
+                    <input class="input" id="regPhone" placeholder="手机号码">
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:24px;">
+                <label>教育程度</label>
+                <input class="input" id="regEducation" placeholder="如 大学本科">
+            </div>
+            <button class="btn btn-primary btn-block" onclick="doRegister()">注 册</button>
+            <div style="text-align:center; margin-top:16px; font-size:14px; color:var(--text-soft);">
+                已有账户？<a href="#" onclick="showAuthLogin(); return false;" style="color:var(--primary); font-weight:600;">返回登录</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 顶部导航 -->
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">
+            <svg viewBox="0 0 44 44" width="38" height="38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 6 C14 6 8 11 8 18 C8 22 10 25 13 27 C10 29 9 32 11 35 C13 38 17 39 20 38 C21 39 22 40 22 40 C22 40 23 39 24 38 C27 39 31 38 33 35 C35 32 34 29 31 27 C34 25 36 22 36 18 C36 11 30 6 22 6Z" fill="#B08968" opacity="0.18" stroke="#3D2C1E" stroke-width="1.8"/>
+                <path d="M15 14 Q18 16 16 20 Q14 24 17 27" stroke="#B08968" stroke-width="1" fill="none" opacity="0.5"/>
+                <path d="M12 18 Q15 19 14 23" stroke="#B08968" stroke-width="0.8" fill="none" opacity="0.4"/>
+                <path d="M29 14 Q26 16 28 20 Q30 24 27 27" stroke="#B08968" stroke-width="1" fill="none" opacity="0.5"/>
+                <path d="M32 18 Q29 19 30 23" stroke="#B08968" stroke-width="0.8" fill="none" opacity="0.4"/>
+                <path d="M22 10 L22 36" stroke="#3D2C1E" stroke-width="0.6" opacity="0.2"/>
+                <path d="M6 22 L12 22 L14 16 L17 28 L20 14 L23 30 L26 18 L29 26 L32 20 L34 22 L38 22" stroke="#3D2C1E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="16" cy="10" r="2.5" fill="#E6A57E" stroke="#3D2C1E" stroke-width="1"/>
+                <text x="16" y="11.5" font-size="3" fill="#3D2C1E" text-anchor="middle" font-weight="700" font-family="sans-serif">Fp1</text>
+                <path d="M14 8 Q16 5 18 8" stroke="#E6A57E" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                <path d="M13 7 Q16 3 19 7" stroke="#E6A57E" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+        </div>
+        <span>CTIS-EEG · 认知训练与干预系统</span>
+    </div>
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-page="home">首页</button>
+        <button class="nav-tab" data-page="device">设备连接</button>
+        <button class="nav-tab" data-page="train">认知训练</button>
+        <button class="nav-tab" data-page="records">数据记录</button>
+        <button class="nav-tab" data-page="trajectory">轨迹追踪</button>
+        <button class="nav-tab" data-page="qbank">题库管理</button>
+        <button class="nav-tab" data-page="profile">个人中心</button>
+    </nav>
+    <div id="controlModeChip" class="control-mode-chip" title="当前控制模式">
+        <span class="control-mode-dot" id="controlModeDot"></span>
+        <span id="controlModeLabel">鼠标控制</span>
+    </div>
+    <div id="userChip" class="user-chip" style="display:none;">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <span id="userChipName">未选择</span>
+    </div>
+    <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()" title="系统设置">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+    </button>
+</header>
+
+<!-- 设置面板 (右侧滑出) -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+        <h3>系统设置</h3>
+        <button class="settings-close" onclick="toggleSettings()">&times;</button>
+    </div>
+    <div class="settings-body">
+        <div class="settings-section">
+            <div class="settings-section-title">眨眼阈值设定</div>
+            <p class="settings-section-desc">调整眨眼检测的幅度阈值，数值越大需要越强的眨眼才能触发</p>
+            <div class="settings-field">
+                <label>弱眨眼阈值</label>
+                <div class="settings-slider-row">
+                    <input type="range" id="thBaseSlider" min="30" max="200" value="80" oninput="onThresholdChange()">
+                    <span class="settings-slider-val" id="thBaseVal">80</span>
+                </div>
+            </div>
+            <div class="settings-field">
+                <label>中眨眼阈值</label>
+                <div class="settings-slider-row">
+                    <input type="range" id="thMidSlider" min="80" max="300" value="150" oninput="onThresholdChange()">
+                    <span class="settings-slider-val" id="thMidVal">150</span>
+                </div>
+            </div>
+            <div class="settings-field">
+                <label>强眨眼阈值</label>
+                <div class="settings-slider-row">
+                    <input type="range" id="thStrongSlider" min="100" max="500" value="250" oninput="onThresholdChange()">
+                    <span class="settings-slider-val" id="thStrongVal">250</span>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="saveThresholds()">保存阈值</button>
+        </div>
+    </div>
+</div>
+
+<!-- EEG实时数据面板 (右上角悬浮) -->
+<div id="eegPanel" class="eeg-panel" style="display:none;">
+    <div class="eeg-panel-title">EEG 实时监测</div>
+    <div class="eeg-panel-grid">
+        <div class="eeg-item">
+            <span class="eeg-label">Alpha</span>
+            <span class="eeg-value" id="eegPanelAlpha">--</span>
+            <span class="eeg-unit">&mu;V&sup2;</span>
+        </div>
+        <div class="eeg-item">
+            <span class="eeg-label">Theta</span>
+            <span class="eeg-value" id="eegPanelTheta">--</span>
+            <span class="eeg-unit">&mu;V&sup2;</span>
+        </div>
+        <div class="eeg-item">
+            <span class="eeg-label">T/A</span>
+            <span class="eeg-value" id="eegPanelTA">--</span>
+        </div>
+        <div class="eeg-item">
+            <span class="eeg-label">眨眼</span>
+            <span class="eeg-value" id="eegPanelBlink">--</span>
+            <span class="eeg-unit">次/分</span>
+        </div>
+        <div class="eeg-item">
+            <span class="eeg-label">AI</span>
+            <span class="eeg-value" id="eegPanelAI">--</span>
+        </div>
+        <div class="eeg-item">
+            <span class="eeg-label">CFI</span>
+            <span class="eeg-value" id="eegPanelCFI">--</span>
+        </div>
+    </div>
+</div>
+
+<main class="container">
+
+<!-- ==================== 首页 ==================== -->
+    <section class="page active" id="page-home">
+        <div class="page-header">
+            <h1 class="page-title" id="homeGreeting">您好，欢迎回来</h1>
+            <p class="page-subtitle">为早期阿尔茨海默病患者设计的居家认知训练与干预平台</p>
+        </div>
+
+        <!-- 个人概览统计 -->
+        <div class="grid grid-4" style="margin-bottom:24px;">
+            <div class="stat-card">
+                <div class="stat-value" id="homeTotalSessions">0</div>
+                <div class="stat-label">训练会话</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="homeTotalTrials">0</div>
+                <div class="stat-label">试次总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="homeAvgScore">0</div>
+                <div class="stat-label">平均分</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="homeAccuracy">--</div>
+                <div class="stat-label">平均正确率</div>
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <!-- 左：快捷操作 -->
+            <div class="card" style="background:linear-gradient(135deg, #F3D5B5 0%, #E6A57E 100%); border:none; color:#3D2C1E;">
+                <h2 style="font-size:22px; font-weight:700; margin-bottom:8px;">开始今日训练</h2>
+                <p style="font-size:14px; opacity:0.85; margin-bottom:20px;">按顺序依次完成 5 大认知域训练，每项间休息 5 秒</p>
+                <button class="btn btn-primary" style="background:#3D2C1E; color:#FAF6F0; font-size:16px; padding:12px 32px;" onclick="switchPage('train'); startSequential();">开始顺序训练</button>
+                <div style="margin-top:16px; font-size:13px; opacity:0.7;">单次训练建议 15-20 分钟，根据自身状态随时退出</div>
+            </div>
+
+            <!-- 右：使用流程 + 提示 -->
+            <div class="card">
+                <h2 class="card-title">使用流程</h2>
+                <ol style="padding-left:20px; line-height:2.2; color:var(--text);">
+                    <li><b>连接设备</b> — 点击顶部「设备连接」，使用模拟模式即可开始体验</li>
+                    <li><b>开始训练</b> — 选择顺序训练或单项任务，按提示作答</li>
+                    <li><b>查看记录</b> — 训练数据自动保存，可随时回顾</li>
+                    <li><b>轨迹追踪</b> — 查看跨会话认知轨迹建模与风险预警</li>
+                </ol>
+                <div class="section-divider"></div>
+                <div style="padding:14px; background:var(--bg-soft); border-radius:var(--radius-sm); font-size:14px; color:var(--text-soft);">
+                    温馨提醒：CSTM 轨迹建模需要至少 8 次顺序训练数据，请坚持每日训练
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 设备连接页 ==================== -->
+    <section class="page" id="page-device">
+        <div class="page-header">
+            <h1 class="page-title">设备连接</h1>
+            <p class="page-subtitle">连接 ThinkGear 脑电采集设备，或使用模拟模式开始体验</p>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="card device-card">
+                <h2 class="card-title">连接方式</h2>
+
+                <div class="form-row">
+                    <label>连接模式</label>
+                    <select class="input" id="deviceMode">
+                        <option value="sim">模拟模式 (推荐体验)</option>
+                        <option value="serial">蓝牙串口 (真实设备)</option>
+                    </select>
+                </div>
+
+                <div class="form-row" id="portRow" style="display:none;">
+                    <label>串口名称</label>
+                    <input class="input" id="devicePort" placeholder="如 COM5 / /dev/rfcomm0">
+                </div>
+
+                <div class="flex gap-12">
+                    <button class="btn btn-primary" style="flex:1;" onclick="connectDevice()">连接</button>
+                    <button class="btn btn-ghost" style="flex:1;" onclick="disconnectDevice()">断开</button>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <button class="btn btn-accent btn-block" onclick="runCalibration()">运行眨眼校准</button>
+                <p class="text-soft" style="font-size:13px; text-align:center; margin-top:6px;">
+                    校准后会根据眨眼幅度自动设置弱/中/强三档阈值
+                </p>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">实时状态</h2>
+
+                <div class="device-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <div>
+                        <div style="font-weight:600;" id="statusText">未连接</div>
+                        <div class="text-soft" style="font-size:13px;" id="statusMode">设备离线</div>
+                    </div>
+                </div>
+
+                <div class="device-metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="signalQuality">--</div>
+                        <div class="metric-label">信号质量</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="eegValue">--</div>
+                        <div class="metric-label">EEG (uV)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="uptime">--</div>
+                        <div class="metric-label">连接时长 (s)</div>
+                    </div>
+                </div>
+
+                <div class="eeg-wave mt-16">
+                    <canvas id="eegCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 认知训练页 ==================== -->
+    <section class="page" id="page-train">
+        <div class="page-header">
+            <h1 class="page-title">认知训练</h1>
+            <p class="page-subtitle">选择一项任务开始训练，每项任务从 3 套题库中随机抽取</p>
+        </div>
+
+        <!-- 顺序训练大入口 -->
+        <div class="card" id="sequentialEntry" style="background:linear-gradient(135deg, #F3D5B5 0%, #E6A57E 100%); border:none; color:#3D2C1E;">
+            <div class="flex-between" style="gap:20px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:240px;">
+                    <h2 style="font-size:24px; font-weight:700; margin-bottom:6px;">🧠 顺序训练模式</h2>
+                    <p style="font-size:15px; opacity:0.85;">按顺序依次完成 5 大认知域训练（定向力→情景记忆→执行功能→语义记忆→命名能力），每项间休息 5 秒</p>
+                </div>
+                <div class="flex gap-12">
+                    <button class="btn btn-primary" style="background:#3D2C1E; color:#FAF6F0;" onclick="startSequential()">开始训练</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="taskListContainer">
+            <h2 class="card-title">训练任务（单项）</h2>
+            <div class="grid grid-3" id="taskList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 训练舞台 (动态填充) -->
+        <div class="card" id="taskStage" style="display:none; position:relative;">
+            <div class="task-stage-header">
+                <span class="task-stage-name" id="taskStageName"></span>
+                <button class="exit-btn" onclick="exitTask()">✕ 退出训练</button>
+            </div>
+            <div class="task-stage" id="taskStageContent"></div>
+        </div>
+
+        <!-- 顺序训练面板 -->
+        <div class="card" id="sequentialStage" style="display:none; position:relative;">
+            <div class="task-stage-header">
+                <span class="task-stage-name" id="seqStageName">顺序训练</span>
+                <button class="exit-btn" onclick="exitTask()">✕ 退出训练</button>
+            </div>
+            <div class="task-stage" id="sequentialStageContent"></div>
+        </div>
+    </section>
+
+    <!-- ==================== 数据记录页 ==================== -->
+    <section class="page" id="page-records">
+        <div class="page-header">
+            <h1 class="page-title">数据记录</h1>
+            <p class="page-subtitle" id="recordsSubtitle">查看历史训练记录与个人统计</p>
+        </div>
+
+        <!-- 总体统计 -->
+        <div class="grid grid-4" style="margin-bottom:24px;">
+            <div class="stat-card">
+                <div class="stat-value" id="statSessions">0</div>
+                <div class="stat-label">训练会话</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statTrials">0</div>
+                <div class="stat-label">试次总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statAvgScore">0</div>
+                <div class="stat-label">平均分</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statAccuracy">0%</div>
+                <div class="stat-label">平均正确率</div>
+            </div>
+        </div>
+
+        <!-- 会话列表 -->
+        <div class="card">
+            <h2 class="card-title">训练会话</h2>
+            <div id="sessionList"></div>
+        </div>
+
+        <!-- 会话详情面板 (右侧滑出) -->
+        <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+        <div class="detail-panel" id="detailPanel">
+            <div class="detail-header">
+                <h3 id="detailTitle">会话详情</h3>
+                <button class="detail-close" onclick="closeDetail()">&times;</button>
+            </div>
+            <div class="detail-body" id="detailBody"></div>
+        </div>
+    </section>
+
+    <!-- ==================== 轨迹追踪页 ==================== -->
+    <section class="page" id="page-trajectory">
+        <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+            <div>
+                <h1 class="page-title">轨迹追踪</h1>
+                <p class="page-subtitle" id="trajSubtitle">CSTM 跨会话认知轨迹建模与风险预警</p>
+            </div>
+            <button class="btn btn-primary" id="trajDownloadBtn" onclick="downloadTrajectoryReport()" style="white-space:nowrap;" disabled>⬇ 下载报告</button>
+        </div>
+
+        <!-- 不足8次会话提示 -->
+        <div class="card traj-insufficient" id="trajInsufficient" style="display:none;">
+            <div class="traj-insufficient-icon">📊</div>
+            <h3>数据积累中</h3>
+            <p>CSTM 轨迹建模需要至少 <b>8 次</b>顺序训练会话数据，当前仅 <b id="trajCurrentCount">0</b> 次</p>
+            <p class="text-soft" style="font-size:13px;">请继续完成顺序训练，系统将在数据充足后自动生成认知轨迹模型与预警报告</p>
+        </div>
+
+        <!-- 认知档案概览 -->
+        <div class="grid grid-4" style="margin-bottom:24px;">
+            <div class="stat-card">
+                <div class="stat-value" id="trajSessions">0</div>
+                <div class="stat-label">总会话数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="trajCT30">--</div>
+                <div class="stat-label">最近CT-30</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="trajTrend">--</div>
+                <div class="stat-label">总体轨迹</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="trajRiskLevel">--</div>
+                <div class="stat-label">风险等级</div>
+            </div>
+        </div>
+
+        <!-- 预警提示区 -->
+        <div class="card" id="trajWarnings" style="display:none; margin-bottom:24px;">
+            <h2 class="card-title" style="color:var(--danger);">⚠ CSTM 认知预警报告</h2>
+            <p class="text-soft" style="font-size:13px; margin-bottom:12px;">基于跨会话认知轨迹建模的自动预警，含受累维度、下滑幅度及临床建议</p>
+            <div id="trajWarningList"></div>
+        </div>
+
+        <!-- 五维认知向量 D1-D5 轨迹折线图 -->
+        <div class="card" style="margin-bottom:24px;">
+            <h2 class="card-title">五维认知向量轨迹 (D1-D5)</h2>
+            <p class="text-soft" style="font-size:13px; margin-bottom:12px;">各认知域归一化得分 (0-1) 跨会话变化，虚线为线性拟合趋势</p>
+            <div class="traj-chart-container">
+                <canvas id="trajLineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- CT-30总分轨迹 -->
+        <div class="card" style="margin-bottom:24px;">
+            <h2 class="card-title">CT-30 总分轨迹</h2>
+            <p class="text-soft" style="font-size:13px; margin-bottom:12px;">认知训练总分 (0-30) 跨会话变化趋势</p>
+            <div class="traj-chart-container" style="min-height:240px;">
+                <canvas id="trajTotalChart"></canvas>
+            </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-bottom:24px;">
+            <!-- 认知雷达图 -->
+            <div class="card">
+                <h2 class="card-title">认知雷达图</h2>
+                <p class="text-soft" style="font-size:13px; margin-bottom:12px;">首次会话 vs 最近会话 D1-D5 对比</p>
+                <div class="traj-radar-container">
+                    <canvas id="trajRadarChart"></canvas>
+                </div>
+            </div>
+            <!-- DMAP四象限状态空间 -->
+            <div class="card">
+                <h2 class="card-title">DMAP 状态空间</h2>
+                <p class="text-soft" style="font-size:13px; margin-bottom:12px;">注意力(AI) vs 疲劳(CFI) 四象限分布</p>
+                <div class="traj-radar-container">
+                    <canvas id="trajDmapChart"></canvas>
+                </div>
+                <!-- CFI/AI 公式说明 (说明书实施例六) -->
+                <div class="dmap-formula-box">
+                    <div class="dmap-formula-title">DMAP 指标公式</div>
+                    <div class="dmap-formula-item">
+                        <span class="dmap-formula-label">CFI (综合疲劳指数)</span>
+                        <span class="dmap-formula-expr">CFI = 0.4·ΔP<sub>A</sub> + 0.35·ΔR + 0.25·ΔSBR</span>
+                        <span class="dmap-formula-desc">ΔP<sub>A</sub>=Alpha功率变化量, ΔR=Theta/Alpha比值变化量, ΔSBR=自发眨眼频率偏差</span>
+                    </div>
+                    <div class="dmap-formula-item">
+                        <span class="dmap-formula-label">AI (注意力指数)</span>
+                        <span class="dmap-formula-expr">AI = P<sub>A</sub> / P<sub>T</sub></span>
+                        <span class="dmap-formula-desc">Alpha功率与Theta功率比值，经Z-score标准化</span>
+                    </div>
+                </div>
+                <!-- DMAP 三级保护响应 (说明书表5) -->
+                <div class="dmap-protection-box">
+                    <div class="dmap-formula-title">DMAP 三级保护响应规则</div>
+                    <div class="dmap-protection-levels">
+                        <div class="dmap-prot-item dmap-prot-l1">
+                            <div class="dmap-prot-level">一级</div>
+                            <div class="dmap-prot-cond">CFI ≥ 40</div>
+                            <div class="dmap-prot-action">弹出休息建议，缩短单题呈现时间，增加语音提示频率</div>
+                        </div>
+                        <div class="dmap-prot-item dmap-prot-l2">
+                            <div class="dmap-prot-level">二级</div>
+                            <div class="dmap-prot-cond">CFI ≥ 60</div>
+                            <div class="dmap-prot-action">强制插入60秒休息（含深呼吸引导），降低任务难度1档</div>
+                        </div>
+                        <div class="dmap-prot-item dmap-prot-l3">
+                            <div class="dmap-prot-level">三级</div>
+                            <div class="dmap-prot-cond">CFI ≥ 80</div>
+                            <div class="dmap-prot-action">终止当前训练会话，保存已完成数据，建议改日再练</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 各域轨迹分类标签 -->
+        <div class="card" style="margin-bottom:24px;">
+            <h2 class="card-title">CSTM 轨迹分类</h2>
+            <p class="text-soft" style="font-size:13px; margin-bottom:12px;">基于线性混合效应模型的五维认知轨迹分类（改善型 / 维持型 / 下滑型）</p>
+            <div id="trajClassification" class="traj-classification"></div>
+        </div>
+
+        <!-- IGAD 决策矩阵 (说明书实施例五) -->
+        <div class="card" style="margin-bottom:24px;">
+            <h2 class="card-title">IGAD 意图分级自适应难度调控</h2>
+            <p class="text-soft" style="font-size:13px; margin-bottom:16px;">每10试次执行一次：综合意图强度均值(IS_mean)与正确率(ACC)的联合决策矩阵</p>
+            <div class="igad-matrix">
+                <div class="igad-row-label">
+                    <div class="igad-label-cell"></div>
+                    <div class="igad-label-cell">ACC &lt; 60%</div>
+                    <div class="igad-label-cell">60% ≤ ACC &lt; 80%</div>
+                    <div class="igad-label-cell">ACC ≥ 80%</div>
+                </div>
+                <div class="igad-row">
+                    <div class="igad-axis-cell">IS_mean ≥ 2.5<br><span style="font-size:11px;color:var(--text-soft);">高投入</span></div>
+                    <div class="igad-cell igad-maintain">维持<br><span style="font-size:11px;">高投入低效</span></div>
+                    <div class="igad-cell igad-up">升1档<br><span style="font-size:11px;">高效高投入</span></div>
+                    <div class="igad-cell igad-up">升1档<br><span style="font-size:11px;">高效高投入</span></div>
+                </div>
+                <div class="igad-row">
+                    <div class="igad-axis-cell">1.5 ≤ IS_mean &lt; 2.5<br><span style="font-size:11px;color:var(--text-soft);">中投入</span></div>
+                    <div class="igad-cell igad-down">降1档<br><span style="font-size:11px;">中投入低效</span></div>
+                    <div class="igad-cell igad-maintain">维持<br><span style="font-size:11px;">匹配状态</span></div>
+                    <div class="igad-cell igad-up">升1档<br><span style="font-size:11px;">高效中投入</span></div>
+                </div>
+                <div class="igad-row">
+                    <div class="igad-axis-cell">IS_mean &lt; 1.5<br><span style="font-size:11px;color:var(--text-soft);">低投入</span></div>
+                    <div class="igad-cell igad-down2">降2档<br><span style="font-size:11px;">认知耗竭</span></div>
+                    <div class="igad-cell igad-down">降1档<br><span style="font-size:11px;">低投入中效</span></div>
+                    <div class="igad-cell igad-maintain">维持<br><span style="font-size:11px;">低投入高效</span></div>
+                </div>
+            </div>
+            <div class="igad-legend">
+                <span class="igad-legend-item"><span class="igad-legend-dot" style="background:#6A994E;"></span>升档</span>
+                <span class="igad-legend-item"><span class="igad-legend-dot" style="background:#9B8B7A;"></span>维持</span>
+                <span class="igad-legend-item"><span class="igad-legend-dot" style="background:#D4A017;"></span>降1档</span>
+                <span class="igad-legend-item"><span class="igad-legend-dot" style="background:#E07A5F;"></span>降2档</span>
+            </div>
+        </div>
+
+        <!-- 阶段性报告 -->
+        <div class="card" style="margin-bottom:24px;">
+            <h2 class="card-title">阶段性报告</h2>
+            <div id="trajReport" class="traj-report"></div>
+        </div>
+
+        <!-- 会话明细表 -->
+        <div class="card">
+            <h2 class="card-title">会话明细</h2>
+            <!-- CT-30 评分体系说明 (说明书7.1表6) -->
+            <div class="ct30-scoring-box">
+                <div class="dmap-formula-title">CT-30 评分体系 (说明书7.1表6)</div>
+                <div class="ct30-scoring-grid">
+                    <div class="ct30-score-item">
+                        <div class="ct30-score-dim">D1 定向力</div>
+                        <div class="ct30-score-rule">正确率 × 6分 (EEG-Orient问答正确比例)</div>
+                    </div>
+                    <div class="ct30-score-item">
+                        <div class="ct30-score-dim">D2 情景记忆</div>
+                        <div class="ct30-score-rule">回忆正确率×4 + (1-虚报率)×2 (编码-延迟-回忆三阶段)</div>
+                    </div>
+                    <div class="ct30-score-item">
+                        <div class="ct30-score-dim">D3 执行功能</div>
+                        <div class="ct30-score-rule">时间得分×3 + 正确率×3 (连线速度与准确率并重)</div>
+                    </div>
+                    <div class="ct30-score-item">
+                        <div class="ct30-score-dim">D4 语义记忆</div>
+                        <div class="ct30-score-rule">分类正确率×4 + 速度得分×2 (语义分类与检索流畅性)</div>
+                    </div>
+                    <div class="ct30-score-item">
+                        <div class="ct30-score-dim">D5 命名能力</div>
+                        <div class="ct30-score-rule">首次正确率×3 + (1-需提示比例)×2 + (1-被动学习)×1</div>
+                    </div>
+                </div>
+                <div class="ct30-score-total">CT-30 总分 = D1+D2+D3+D4+D5，范围 0-30分，各分项归一化至0-1用于CSTM轨迹建模</div>
+            </div>
+            <div id="trajTable" class="traj-table-wrap"></div>
+        </div>
+
+        <!-- 逐试次数据维度 (说明书8.1表7) -->
+        <div class="card" style="margin-bottom:24px;">
+            <h2 class="card-title">逐试次数据维度</h2>
+            <p class="text-soft" style="font-size:13px; margin-bottom:12px;">每次训练会话的逐试次结构化数据：眨眼类型、意图强度、反应时间、EEG频带功率、CFI/AI快照</p>
+            <div class="traj-trial-filter" style="margin-bottom:16px;">
+                <label style="font-size:14px; color:var(--text-soft); margin-right:8px;">选择会话：</label>
+                <select id="trajTrialSession" class="input" style="width:auto; min-width:200px; padding:8px 12px;" onchange="drawTrialDetails()"></select>
+            </div>
+            <div id="trajTrialTable" class="traj-table-wrap" style="overflow-x:auto;"></div>
+        </div>
+    </section>
+
+    <!-- ==================== 题库管理页 ==================== -->
+    <section class="page" id="page-qbank">
+        <div class="page-header">
+            <h1 class="page-title">题库管理</h1>
+            <p class="page-subtitle">校对与个性化定制训练题目答案</p>
+        </div>
+
+        <!-- 任务选择 -->
+        <div class="card" style="margin-bottom:16px;">
+            <h2 class="card-title">选择任务</h2>
+            <div id="qbankTaskList" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+        </div>
+
+        <!-- 题目列表 -->
+        <div id="qbankContent" style="display:none;">
+            <div class="card" style="margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 class="card-title" id="qbankTaskTitle">--</h2>
+                        <p class="text-soft" style="font-size:13px;">点击选项可编辑答案，修改后点击保存。时间定向题目答案会根据当前日期自动生成，通常无需修改。</p>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <select id="qbankSceneSelect" class="input" style="width:auto; min-width:160px;" onchange="loadQbankScene()">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="qbankTrialsList"></div>
+        </div>
+
+        <!-- 编辑弹窗 -->
+        <div id="qbankEditModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+            <div class="card" style="max-width:500px; width:90%; max-height:80vh; overflow-y:auto;">
+                <h2 class="card-title">编辑题目</h2>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <label>题目</label>
+                    <input class="input" id="qbankEditPrompt" disabled>
+                </div>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <label>领域</label>
+                    <input class="input" id="qbankEditDomain" disabled>
+                </div>
+                <div id="qbankEditOptions" style="margin-bottom:16px;"></div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-primary" onclick="saveQbankEdit()">保存</button>
+                    <button class="btn btn-ghost" onclick="resetQbankEdit()">恢复默认</button>
+                    <button class="btn btn-ghost" onclick="closeQbankEdit()">取消</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 个人中心页 ==================== -->
+    <section class="page" id="page-profile">
+        <div class="page-header">
+            <h1 class="page-title">个人中心</h1>
+            <p class="page-subtitle">管理您的个人信息与账户设置</p>
+        </div>
+
+        <div class="grid grid-2">
+            <!-- 左：个人信息 -->
+            <div class="card">
+                <h2 class="card-title">个人信息</h2>
+                <div class="form-grid" style="margin-bottom:12px;">
+                    <div class="form-row">
+                        <label>姓名</label>
+                        <input class="input" id="profileName" disabled style="background:var(--bg-soft);">
+                    </div>
+                    <div class="form-row">
+                        <label>年龄</label>
+                        <input class="input" id="profileAge" type="number" placeholder="如 68">
+                    </div>
+                </div>
+                <div class="form-grid" style="margin-bottom:12px;">
+                    <div class="form-row">
+                        <label>性别</label>
+                        <input class="input" id="profileGender" placeholder="男 / 女">
+                    </div>
+                    <div class="form-row">
+                        <label>诊断</label>
+                        <input class="input" id="profileDiagnosis" placeholder="如 MCI / 早期AD">
+                    </div>
+                </div>
+                <div class="form-grid" style="margin-bottom:12px;">
+                    <div class="form-row">
+                        <label>联系电话</label>
+                        <input class="input" id="profilePhone" placeholder="手机号码">
+                    </div>
+                    <div class="form-row">
+                        <label>教育程度</label>
+                        <input class="input" id="profileEducation" placeholder="如 大学本科">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <label>既往病史</label>
+                    <input class="input" id="profileMedicalHistory" placeholder="如 高血压、糖尿病等">
+                </div>
+                <div class="form-row" style="margin-bottom:20px;">
+                    <label>紧急联系人</label>
+                    <input class="input" id="profileEmergencyContact" placeholder="姓名 + 电话">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveProfile()">保存修改</button>
+            </div>
+
+            <!-- 右：账户安全 + 退出 -->
+            <div class="card">
+                <h2 class="card-title">账户安全</h2>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <label>旧密码</label>
+                    <input class="input" id="oldPassword" type="password" placeholder="输入旧密码">
+                </div>
+                <div class="form-grid" style="margin-bottom:20px;">
+                    <div class="form-row">
+                        <label>新密码</label>
+                        <input class="input" id="newPassword" type="password" placeholder="至少4位">
+                    </div>
+                    <div class="form-row">
+                        <label>确认新密码</label>
+                        <input class="input" id="confirmPassword" type="password" placeholder="再次输入新密码">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" style="margin-bottom:24px;" onclick="changePassword()">修改密码</button>
+
+                <div class="section-divider"></div>
+
+                <div style="padding:20px; background:var(--bg-soft); border-radius:var(--radius-sm);">
+                    <h3 style="font-size:15px; margin-bottom:8px;">账户信息</h3>
+                    <div style="font-size:14px; color:var(--text-soft); line-height:1.8;">
+                        <div>用户ID：<span id="profileUserId">--</span></div>
+                        <div>注册时间：<span id="profileCreatedAt">--</span></div>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <button class="btn btn-ghost btn-block" style="color:var(--danger); border-color:var(--danger);" onclick="doLogout()">退出登录</button>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- 训练总结弹窗 -->
+<div class="summary-overlay" id="summaryOverlay" style="display:none;">
+    <div class="summary-card">
+        <button class="summary-close" onclick="closeSummary(true)">&times;</button>
+        <div class="summary-emoji" id="summaryEmoji">🌟</div>
+        <div class="summary-title" id="summaryTitle">训练完成</div>
+        <p class="text-soft mt-12" id="summaryMsg">您完成了一轮训练</p>
+        <div class="summary-stats">
+            <div>
+                <div class="summary-stat-value" id="sumScore">0</div>
+                <div class="summary-stat-label">总得分</div>
+            </div>
+            <div>
+                <div class="summary-stat-value" id="sumCorrect">0/0</div>
+                <div class="summary-stat-label">正确</div>
+            </div>
+            <div>
+                <div class="summary-stat-value" id="sumDuration">0s</div>
+                <div class="summary-stat-label">时长</div>
+            </div>
+        </div>
+        <div class="summary-actions">
+            <button class="btn btn-ghost" onclick="closeSummary(true)">返回主页</button>
+            <button class="btn btn-primary" onclick="closeSummary(false)">再来一次</button>
+        </div>
+    </div>
+</div>
+
+<div id="toastContainer"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

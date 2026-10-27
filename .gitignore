@@ -1,0 +1,47 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ===== 数据库与用户隐私数据（严禁上传） =====
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+data_files/
+CTIS-EEG/data_files/
+ctis_web/data/*.db
+
+# ===== 日志 =====
+*.log
+CTIS-EEG/debug.log
+
+# ===== 中间产物（从 docx 提取的文本/附图，不上传） =====
+docx_text.txt
+fig_text.txt
+extracted_figs/
+
+# ===== 任务书（含个人/机构信息，不上传） =====
+任务书/
+任务书.rar
+
+# ===== 顶层空目录占位 =====
+/assets/
+/gui/
+/tasks/
+
+# ===== Office 临时锁文件 =====
+~$*.docx
+~$*.doc
+.~lock.*
+
+# ===== 编辑器/系统 =====
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
